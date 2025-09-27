@@ -1,9 +1,11 @@
-import express from "express";
+import { app } from "./app";
+import { config } from "./config/env.config";
 
-const app = express();
+const startServer = () => {
+  const PORT = config.port || 8000;
+  app.listen(PORT, () => {
+    console.log(`Server is listening on PORT:${PORT}`);
+  });
+};
 
-app.use(express.json());
-
-app.listen(8000, () => {
-  console.log("server is running on port 8000");
-});
+startServer();
