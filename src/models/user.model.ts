@@ -38,7 +38,7 @@ const userSchema = new mongoose.Schema(
         values: [UserType.ADMIN, UserType.TEACHER, UserType.STUDENT],
         message: "{VALUE} is not supported",
       },
-      default: "student",
+      default: UserType.STUDENT,
     },
   },
   {
