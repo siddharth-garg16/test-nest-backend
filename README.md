@@ -1,8 +1,6 @@
----
-
 ## ⚙️ `README.md` — Backend (Express Repo)
 
-```markdown
+````markdown
 # ⚙️ Test Nest Platform — Backend (Express.js)
 
 The **backend** for the Test Nest Platform — a RESTful API built with **Node.js**, **Express.js**, and **MongoDB**.  
@@ -27,3 +25,4 @@ It handles authentication, exam creation, submissions, and result management for
 git clone https://github.com/siddharth-garg16/test-nest-backend.git
 cd test-nest-backend
 ```
+````
