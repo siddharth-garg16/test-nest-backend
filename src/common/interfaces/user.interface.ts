@@ -10,4 +10,7 @@ export interface User {
   userType: UserType;
   createdAt: Date;
   updatedAt: Date;
+  generateAccessToken: () => string;
+  generateRefreshToken: () => string;
+  validatePassword: (candidatePassword: string) => Promise<boolean>;
 }

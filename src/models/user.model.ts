@@ -3,8 +3,9 @@ import * as jwt from "jsonwebtoken";
 import * as bcrypt from "bcrypt";
 import { config } from "../config/env.config";
 import { UserType } from "../common/enums/user-type.enum";
+import { User as IUser } from "../common/interfaces/user.interface";
 
-const userSchema = new mongoose.Schema(
+const userSchema = new mongoose.Schema<IUser>(
   {
     firstName: {
       type: String,
@@ -102,4 +103,4 @@ userSchema.methods.generateRefreshToken = function (): string {
   );
 };
 
-export const User = mongoose.model("User", userSchema);
+export const User = mongoose.model<IUser>("User", userSchema);
