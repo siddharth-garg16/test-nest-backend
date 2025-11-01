@@ -16,9 +16,15 @@ const generateAccessAndRefreshToken = async (userId: string) => {
 };
 
 // route: '/signup'
+const signupUser = () => {};
 
 // route: '/login'
+const loginUser = () => {};
 
 // route: '/logout'
+const logoutUser = () => {};
 
 // route: '/refresh-token'
+const refreshToken = () => {};
+
+export { signupUser, loginUser, logoutUser, refreshToken };
