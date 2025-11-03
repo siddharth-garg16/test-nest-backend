@@ -1,3 +1,4 @@
+import { NextFunction, Request, Response } from "express";
 import { User } from "../models/user.model";
 
 const generateAccessAndRefreshToken = async (userId: string) => {
@@ -16,15 +17,25 @@ const generateAccessAndRefreshToken = async (userId: string) => {
 };
 
 // route: '/signup'
-const signupUser = () => {};
+const signupUser = async (req: Request, res: Response, next: NextFunction) => {
+  const { firstName, lastName, emailId, password, userType } = req.body;
+};
 
 // route: '/login'
-const loginUser = () => {};
+const loginUser = async (req: Request, res: Response, next: NextFunction) => {};
 
 // route: '/logout'
-const logoutUser = () => {};
+const logoutUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {};
 
 // route: '/refresh-token'
-const refreshToken = () => {};
+const refreshToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {};
 
 export { signupUser, loginUser, logoutUser, refreshToken };
