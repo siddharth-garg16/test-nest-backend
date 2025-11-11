@@ -1,6 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import { User } from "../models/user.model";
 import createHttpError from "http-errors";
+import jwt, { JwtPayload } from "jsonwebtoken";
+import { config } from "../config/env.config";
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
@@ -164,6 +166,50 @@ const refreshToken = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {};
+) => {
+  const incomingToken = req.cookies.refreshToken || req.body.refreshToken;
+  // if no token exists
+  if (!incomingToken) {
+    const missingTokenError = createHttpError(401, "Invalid credentials.");
+    return next(missingTokenError);
+  }
+
+  try {
+    const decodedToken = jwt.verify(
+      incomingToken,
+      config.refreshTokenSecret as string
+    );
+    // if the token is not a valid refreshToken
+    if (typeof decodedToken === "string" || !decodedToken?._id) {
+      const invalidTokenError = createHttpError(401, "Invalid credentials.");
+      return next(invalidTokenError);
+    }
+
+    // find user in db
+    const user = await User.findById(decodedToken._id);
+    if (!user) {
+      return next(createHttpError(404, "User not found."));
+    }
+    // if the refresh token in the req doesn't match refresh token in db
+    if (user.refreshToken !== incomingToken) {
+      return next(createHttpError(403, "Invalid or expired refresh token."));
+    }
+
+    // generating tokens for the user
+    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+      user._id
+    );
+
+    return res
+      .cookie("accessToken", accessToken, COOKIE_OPTIONS)
+      .status(200)
+      .json({
+        status: 200,
+        accessToken,
+      });
+  } catch (error) {
+    return next(createHttpError(500, "Something went wrong."));
+  }
+};
 
 export { signupUser, loginUser, logoutUser, refreshToken };
