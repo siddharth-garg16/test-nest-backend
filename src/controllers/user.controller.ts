@@ -129,11 +129,35 @@ const loginUser = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 // route: '/logout'
-const logoutUser = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {};
+const logoutUser = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = req?.user?._id;
+    await User.findByIdAndUpdate(
+      userId,
+      {
+        $set: {
+          refreshToken: null, // refresh token to null
+        },
+      },
+      {
+        new: true, // returns updated doc after update
+      }
+    );
+
+    return res
+      .status(200)
+      .clearCookie("accessToken", COOKIE_OPTIONS)
+      .clearCookie("refreshToken", COOKIE_OPTIONS)
+      .json({
+        status: 200,
+        message: "User logged out successfully.",
+      });
+  } catch {
+    return next(
+      createHttpError(500, "Something went wrong while logging out.")
+    );
+  }
+};
 
 // route: '/refresh-token'
 const refreshToken = async (
