@@ -2,6 +2,11 @@ import { NextFunction, Request, Response } from "express";
 import { User } from "../models/user.model";
 import createHttpError from "http-errors";
 
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: true,
+};
+
 const generateAccessAndRefreshToken = async (userId: string) => {
   try {
     const user = await User.findById(userId);
@@ -32,41 +37,96 @@ const signupUser = async (req: Request, res: Response, next: NextFunction) => {
     return next(missingFieldError);
   }
 
-  // check if the email is already in use
   try {
-    const user = await User.findOne({ emailId });
-    if (user) {
+    // check if the email is already in use
+    const existingUser = await User.findOne({ emailId });
+    if (existingUser) {
       const existingEmailError = createHttpError(
         400,
         "Entered email is already in use."
       );
       return next(existingEmailError);
     }
+
+    const newUser = await User.create({
+      firstName,
+      lastName,
+      emailId,
+      password,
+      userType,
+    });
+
+    if (!newUser) {
+      return next(
+        createHttpError(500, "Something went wrong while signing up.")
+      );
+    }
+
+    return res.status(201).json({
+      message: "Registered successfully.",
+      id: newUser._id,
+      status: 201,
+    });
   } catch (error) {
     return next(createHttpError(500, "Something went wrong while signing up."));
   }
-
-  const newUser = await User.create({
-    firstName,
-    lastName,
-    emailId,
-    password,
-    userType,
-  });
-
-  if (!newUser) {
-    return next(createHttpError(500, "Something went wrong while signing up."));
-  }
-
-  return res.status(201).json({
-    message: "Registered successfully.",
-    id: newUser._id,
-    status: 201,
-  });
 };
 
 // route: '/login'
-const loginUser = async (req: Request, res: Response, next: NextFunction) => {};
+const loginUser = async (req: Request, res: Response, next: NextFunction) => {
+  const { emailId, password } = req.body;
+  // validate that the required fields are present in the request body
+  const isMissingRequiredFields = [emailId, password].some(
+    (val) => val?.trim() === ""
+  );
+  if (isMissingRequiredFields) {
+    const missingFieldError = createHttpError(
+      400,
+      "Invalid Request: Please enter required fields."
+    );
+    return next(missingFieldError);
+  }
+
+  try {
+    const existingUser = await User.findOne({ emailId });
+    if (!existingUser) {
+      const invalidCredentials = createHttpError(404, "Invalid credentials.");
+      return next(invalidCredentials);
+    }
+
+    // verify if the entered password is correct
+    const isProvidedPasswordCorrect = await existingUser.validatePassword(
+      password
+    );
+    if (!isProvidedPasswordCorrect) {
+      const invalidCredentials = createHttpError(404, "Invalid credentials.");
+      return next(invalidCredentials);
+    }
+
+    // generating access and refresh token for the newly logged in user
+    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+      existingUser._id
+    );
+
+    return res
+      .status(200)
+      .cookie("accessToken", accessToken, COOKIE_OPTIONS)
+      .cookie("refreshToken", refreshToken, COOKIE_OPTIONS)
+      .json({
+        status: 200,
+        accessToken,
+        refreshToken,
+        user: {
+          firstName: existingUser.firstName,
+          lastName: existingUser.lastName,
+          emailId: existingUser.emailId,
+          userType: existingUser.userType,
+        },
+      });
+  } catch (err) {
+    return next(createHttpError(500, "Something went wrong while logging in."));
+  }
+};
 
 // route: '/logout'
 const logoutUser = async (
