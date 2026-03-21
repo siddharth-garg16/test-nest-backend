@@ -6,62 +6,68 @@ import { UserType } from "../common/enums/user-type.enum";
 import { User as IUser } from "../common/interfaces/user.interface";
 
 const userSchema = new mongoose.Schema<IUser>(
-  {
-    firstName: {
-      type: String,
-      required: true,
-      minLength: 4,
-      trim: true,
+    {
+        firstName: {
+            type: String,
+            required: true,
+            minLength: 2,
+            maxLength: 100,
+            trim: true,
+        },
+        lastName: {
+            type: String,
+            trim: true,
+            minLength: 2,
+            maxLength: 100,
+        },
+        emailId: {
+            type: String,
+            required: true,
+            unique: true,
+            trim: true,
+            lowercase: true,
+        },
+        password: {
+            type: String,
+            required: true,
+            minlength: 6,
+        },
+        refreshToken: {
+            type: String,
+            default: null,
+        },
+        userType: {
+            type: String,
+            enum: {
+                values: [UserType.ADMIN, UserType.TEACHER, UserType.STUDENT],
+                message: "{VALUE} is not supported",
+            },
+            default: UserType.STUDENT,
+        },
     },
-    lastName: {
-      type: String,
-      trim: true,
+    {
+        timestamps: true,
     },
-    emailId: {
-      type: String,
-      required: true,
-      unique: true,
-      trim: true,
-      lowercase: true,
-    },
-    password: {
-      type: String,
-      required: true,
-      minlength: 6,
-    },
-    refreshToken: {
-      type: String,
-      default: null,
-    },
-    userType: {
-      type: String,
-      enum: {
-        values: [UserType.ADMIN, UserType.TEACHER, UserType.STUDENT],
-        message: "{VALUE} is not supported",
-      },
-      default: UserType.STUDENT,
-    },
-  },
-  {
-    timestamps: true,
-  }
 );
 
 userSchema.index({ firstName: 1, lastName: 1 });
 
 userSchema.pre("save", async function (next): Promise<void> {
-  // if password was not changed, avoid re-hashing
-  if (this.isModified("password")) return next();
+    // if password was not changed, avoid re-hashing
+    if (this.isModified("password")) return next();
 
-  this.password = await bcrypt.hash(this.password, 10);
-  next();
+    this.password = await bcrypt.hash(this.password, 10);
+    next();
 });
 
 userSchema.methods.validatePassword = async function (
-  passwordByUser: string
+    passwordByUser: string,
 ): Promise<boolean> {
-  const isPasswordCorrect = await bcrypt.compare(passwordByUser, this.password);
-  return isPasswordCorrect;
+    const isPasswordCorrect = await bcrypt.compare(
+        passwordByUser,
+        this.password,
+    );
+    return isPasswordCorrect;
 };
 
 // userSchema.methods.getJWT = async function () {
@@ -72,35 +78,35 @@ userSchema.methods.validatePassword = async function (
 // };
 
 userSchema.methods.generateAccessToken = function (): string {
-  const ACCESS_TOKEN_SECRET = config.accessTokenSecret as string;
+    const ACCESS_TOKEN_SECRET = config.accessTokenSecret as string;
 
-  return jwt.sign(
-    {
-      _id: this._id,
-      firstName: this.firstName,
-      lastName: this.lastName,
-      emailId: this.emailId,
-      userType: this.userType,
-    },
-    ACCESS_TOKEN_SECRET,
-    {
-      expiresIn: "1d",
-    } as object
-  );
+    return jwt.sign(
+        {
+            _id: this._id,
+            firstName: this.firstName,
+            lastName: this.lastName,
+            emailId: this.emailId,
+            userType: this.userType,
+        },
+        ACCESS_TOKEN_SECRET,
+        {
+            expiresIn: "1d",
+        } as object,
+    );
 };
 
 userSchema.methods.generateRefreshToken = function (): string {
-  const REFRESH_TOKEN_SECRET = config.refreshTokenSecret as string;
+    const REFRESH_TOKEN_SECRET = config.refreshTokenSecret as string;
 
-  return jwt.sign(
-    {
-      _id: this._id,
-    },
-    REFRESH_TOKEN_SECRET,
-    {
-      expiresIn: "7d",
-    } as object
-  );
+    return jwt.sign(
+        {
+            _id: this._id,
+        },
+        REFRESH_TOKEN_SECRET,
+        {
+            expiresIn: "7d",
+        } as object,
+    );
 };
 
 export const User = mongoose.model<IUser>("User", userSchema);
