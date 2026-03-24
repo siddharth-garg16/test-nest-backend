@@ -54,7 +54,7 @@ userSchema.index({ firstName: 1, lastName: 1 });
 
 userSchema.pre("save", async function (next): Promise<void> {
     // if password was not changed, avoid re-hashing
-    if (this.isModified("password")) return next();
+    if (!this.isModified("password")) return next();
 
     this.password = await bcrypt.hash(this.password, 10);
     next();

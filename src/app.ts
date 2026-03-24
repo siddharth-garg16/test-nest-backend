@@ -9,9 +9,9 @@ app.use(cookieParser());
 
 // health check route
 app.get("/health", (req: Request, res: Response) => {
-  return res.status(200).json({
-    message: "Server up and running.",
-  });
+    return res.status(200).json({
+        message: "Server up and running.",
+    });
 });
 
 // router related imports
