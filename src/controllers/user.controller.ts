@@ -49,7 +49,7 @@ const signupUser = async (req: Request, res: Response, next: NextFunction) => {
         const existingUser = await User.findOne({ emailId });
         if (existingUser) {
             const existingEmailError = createHttpError(
-                400,
+                409,
                 "Entered email is already in use.",
             );
             return next(existingEmailError);
