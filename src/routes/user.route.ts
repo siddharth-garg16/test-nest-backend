@@ -39,14 +39,14 @@ const router = Router();
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/SignupResponse'
+ *             $ref: '#/components/schemas/SignupRequest'
  *     responses:
  *       201:
  *         description: User created successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/AuthResponse'
+ *               $ref: '#/components/schemas/SignupResponse'
  *       default:
  *         description: Error
  *         content:
