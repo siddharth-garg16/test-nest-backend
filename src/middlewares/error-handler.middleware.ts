@@ -13,7 +13,7 @@ import { HttpError } from "http-errors";
  *           example: "Error Message"
  *         status:
  *           type: integer
- *           example: 4**
+ *           example: 500
  *         stack:
  *           type: string
  *           example: "Error Stack Trace"

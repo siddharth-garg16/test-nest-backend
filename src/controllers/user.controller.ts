@@ -127,6 +127,7 @@ const loginUser = async (req: Request, res: Response, next: NextFunction) => {
             .cookie("refreshToken", refreshToken, COOKIE_OPTIONS)
             .json({
                 status: 200,
+                message: "User logged in successfully.",
                 accessToken,
                 refreshToken,
                 user: {

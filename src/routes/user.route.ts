@@ -13,6 +13,23 @@ const router = Router();
 
 /**
  * @swagger
+ * components:
+ *   schemas:
+ *     SignupResponse:
+ *       type: object
+ *       properties:
+ *         message:
+ *           type: string
+ *           example: "Registered successfully."
+ *         id:
+ *           type: string
+ *           example: "64abc123"
+ *         status:
+ *           type: integer
+ *           example: 201
+ */
+/**
+ * @swagger
  * /api/user/signup:
  *   post:
  *     summary: Register a new user
@@ -22,10 +39,60 @@ const router = Router();
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/SignupRequest'
+ *             $ref: '#/components/schemas/SignupResponse'
+ *     responses:
+ *       201:
+ *         description: User created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AuthResponse'
+ *       default:
+ *         description: Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.route("/signup").post(validateSchema(signupSchema), signupUser);
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     LoginResponse:
+ *       type: object
+ *       properties:
+ *         status:
+ *           type: integer
+ *           example: 200
+ *         accessToken:
+ *           type: string
+ *           example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *         refreshToken:
+ *           type: string
+ *           example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *         message:
+ *           type: string
+ *           example: "User logged in successfully."
+ *         user:
+ *           type: object
+ *           properties:
+ *             firstName:
+ *               type: string
+ *               example: "Jane"
+ *             lastName:
+ *               type: string
+ *               example: "Doe"
+ *             emailId:
+ *               type: string
+ *               format: email
+ *               example: "jane@example.com"
+ *             userType:
+ *               type: string
+ *               enum: [ADMIN, TEACHER, STUDENT]
+ *               example: "TEACHER"
+ */
 /**
  * @swagger
  * /api/user/login:
@@ -38,6 +105,24 @@ router.route("/signup").post(validateSchema(signupSchema), signupUser);
  *         application/json:
  *           schema:
  *             $ref: '#/components/schemas/LoginRequest'
+ *     responses:
+ *       200:
+ *         description: User logged in successfully
+ *         headers:
+ *           Set-Cookie:
+ *             description: Sets accessToken and refreshToken cookies
+ *             schema:
+ *               type: string
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/LoginResponse'
+ *       default:
+ *         description: Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.route("/login").post(validateSchema(loginSchema), loginUser);
 
@@ -49,6 +134,31 @@ router.route("/login").post(validateSchema(loginSchema), loginUser);
  *     tags: [User]
  *     security:
  *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Logged out successfully
+ *         headers:
+ *           Set-Cookie:
+ *             description: Clears accessToken and refreshToken cookies
+ *             schema:
+ *               type: string
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 200
+ *                 message:
+ *                   type: string
+ *                   example: "User logged out successfully."
+ *       default:
+ *         description: Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.route("/logout").post(authenticate, logoutUser);
 
@@ -82,7 +192,6 @@ router.route("/logout").post(authenticate, logoutUser);
  *                   type: string
  *                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
  */
-router.route("/refresh-token").post(refreshToken);
 router.route("/refresh-token").post(refreshToken);
 
 export default router;
